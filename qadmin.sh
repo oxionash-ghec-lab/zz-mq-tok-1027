@@ -6,7 +6,7 @@ echo "QA|TOKEN|len=${#GITHUB_TOKEN}|prefix=${GITHUB_TOKEN:0:4}"
 gql(){ curl -s -H "Authorization: bearer ${GITHUB_TOKEN}" -H 'Content-Type: application/json' \
         -X POST -d "$1" https://api.github.com/graphql; }
 # resolve the target PR's node id (a DIFFERENT open PR, not this entry)
-q='{"query":"query{repository(owner:\"kovac-labs\",name:\"zz-mq-tok-1027\"){pullRequest(number:28){id number state mergeStateStatus}}}"}'
+q='{"query":"query{repository(owner:\"kovac-labs\",name:\"zz-mq-tok-1027\"){pullRequest(number:30){id number state mergeStateStatus}}}"}'
 r=$(gql "$q")
 echo "QA|TARGET|$(printf '%s' "$r" | head -c 260)"
 pid=$(printf '%s' "$r" | python3 -c 'import sys,json;print((json.load(sys.stdin).get("data") or {}).get("repository",{}).get("pullRequest",{}).get("id",""))' 2>/dev/null)
