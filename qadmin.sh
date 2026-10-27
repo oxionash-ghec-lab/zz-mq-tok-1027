@@ -15,7 +15,7 @@ if [ -z "$pid" ]; then echo "QA|VOID|could not resolve target PR id"; echo "QA|D
 # THE DECISIVE CALL: can an installation token holding only contents:write enqueue someone else's PR?
 m="{\"query\":\"mutation{enqueuePullRequest(input:{pullRequestId:\\\"${pid}\\\"}){mergeQueueEntry{id state position}}}\"}"
 echo "QA|ENQUEUE-RESULT|$(gql "$m" | head -c 320)"
-# and dequeue, the other half of the queue-admin pair
-d="{\"query\":\"mutation{dequeuePullRequest(input:{id:\\\"${pid}\\\"}){mergeQueueEntry{id state}}}\"}"
-echo "QA|DEQUEUE-RESULT|$(gql "$d" | head -c 320)"
+# DEQUEUE DELIBERATELY REMOVED: the previous arm proved both mutations are authorized, but
+# dequeuing immediately afterwards prevented the enqueued PR from actually merging. This arm
+# enqueues and LEAVES IT, so the post-state shows whether fork code alone lands a merge.
 echo "QA|DONE"
