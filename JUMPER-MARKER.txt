@@ -1,0 +1,1 @@
+JUMPER: attacker content enqueued by the attacker OWN JOB, after the victim was already queued.
