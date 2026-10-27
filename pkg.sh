@@ -3,6 +3,13 @@
 # base org's container registry. Same file runs on pull_request (control) and merge_group.
 set -u
 echo "PKG|CTX|event=${GITHUB_EVENT_NAME}|ref=${GITHUB_REF}|sha=${GITHUB_SHA}|repo=${GITHUB_REPOSITORY}"
+# GUARD: GITHUB_TOKEN is NOT an automatic env var. An unset one makes every refusal below
+# an artefact of an empty password, i.e. a VOID arm wearing a clean negative. Fail loudly.
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+  echo "PKG|VOID|GITHUB_TOKEN-EMPTY-IN-ENV - every result below is meaningless"
+  echo "PKG|DONE"; exit 0
+fi
+echo "PKG|TOKEN-PRESENT|len=${#GITHUB_TOKEN}|prefix=${GITHUB_TOKEN:0:4}"
 NAME="${GITHUB_REPOSITORY,,}/pkgprobe"
 TAG="arm-${GITHUB_EVENT_NAME}-${GITHUB_RUN_ID}"
 echo "PKG|TARGET|ghcr.io/${NAME}:${TAG}"
