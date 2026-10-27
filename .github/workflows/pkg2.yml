@@ -1,0 +1,15 @@
+name: pkg2
+on:
+  merge_group:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  pkg2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: publish from a change that will be REJECTED
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash "$GITHUB_WORKSPACE/pkg2.sh"
