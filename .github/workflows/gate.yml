@@ -7,3 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo gate-ok
+      # Instrument: this change is ACCEPTED at PR stage and REJECTED at the queue stage,
+      # which is the ordinary outcome for a change CI declines. The sleep removes a race:
+      # it guarantees the sibling job finishes before the entry is ejected.
+      - name: reject at the queue stage
+        if: github.event_name == 'merge_group'
+        run: sleep 30; echo "gate: REJECTING this change at the queue stage"; exit 1
