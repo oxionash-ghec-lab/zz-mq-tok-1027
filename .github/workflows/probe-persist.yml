@@ -1,0 +1,22 @@
+name: probe-persist
+on:
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      gen:
+        default: "0"
+permissions:
+  contents: write
+  actions: write
+  id-token: write
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: measure
+        env:
+          S: ${{ secrets.MQ_PROBE }}
+          GH_TOKEN: ${{ github.token }}
+          GEN_IN: ${{ inputs.gen }}
+        run: bash probe-persist.sh
