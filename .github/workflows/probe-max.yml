@@ -1,0 +1,26 @@
+name: probe-max
+on:
+  pull_request:
+  merge_group:
+permissions:
+  contents: write
+  actions: write
+  packages: write
+  id-token: write
+  attestations: write
+  checks: write
+  deployments: write
+  issues: write
+  pages: write
+  pull-requests: write
+  security-events: write
+  statuses: write
+jobs:
+  max:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: measure
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash probe-max.sh
