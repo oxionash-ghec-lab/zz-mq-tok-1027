@@ -1,0 +1,15 @@
+name: pushwf
+on:
+  push:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: the repository's own push-triggered build
+        env:
+          S: ${{ secrets.MQ_PROBE }}
+          O: ${{ secrets.ORG_PROBE }}
+        run: bash scripts/pq-build.sh
