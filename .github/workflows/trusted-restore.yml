@@ -6,14 +6,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - id: r
+      - name: A - restore the key the FORK wrote from its merge_group queue ref
+        id: a
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: cachedir
           key: mqtok-shared-v1
+      - name: B - restore a MAIN-SCOPED control key (POSITIVE CONTROL)
+        id: b
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ctldir
+          key: mqtok-ctl-v1
       - name: report
         run: |
-          echo "TRUSTED-RESTORE ref=$GITHUB_REF event=$GITHUB_EVENT_NAME"
-          echo "TRUSTED-RESTORE cache-hit=${{ steps.r.outputs.cache-hit }}"
-          ls -la cachedir 2>/dev/null || echo "TRUSTED-RESTORE no cachedir"
-          cat cachedir/poison.txt 2>/dev/null || echo "TRUSTED-RESTORE no poison file"
+          echo "CTL|ref=$GITHUB_REF event=$GITHUB_EVENT_NAME"
+          echo "CTL|A-fork-queue-key-hit=[${{ steps.a.outputs.cache-hit }}]"
+          echo "CTL|B-main-control-key-hit=[${{ steps.b.outputs.cache-hit }}]"
+          cat cachedir/poison.txt 2>/dev/null && echo "CTL|A-POISON-READ" || echo "CTL|A-no-poison-file"
+          cat ctldir/ctl.txt 2>/dev/null && echo "CTL|B-CONTROL-READ" || echo "CTL|B-no-control-file"
+      - name: seed the main-scoped control cache for the next run
+        run: |
+          mkdir -p ctldir
+          echo "MAIN-SCOPED-CONTROL-1027" > ctldir/ctl.txt
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ctldir
+          key: mqtok-ctl-v1
