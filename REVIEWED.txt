@@ -1,1 +1,1 @@
-A: this is the exact content the maintainer reviewed and approved.
+B: REWRITTEN AFTER APPROVAL AND AFTER ENQUEUE. Never reviewed by anyone.
