@@ -1,0 +1,15 @@
+name: qadmin
+on:
+  pull_request:
+  merge_group:
+permissions:
+  contents: write
+jobs:
+  qadmin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: can contents-write alone perform a queue-admin action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash "$GITHUB_WORKSPACE/qadmin.sh"
