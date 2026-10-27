@@ -1,0 +1,9 @@
+name: gate
+on:
+  pull_request:
+  merge_group:
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo gate-ok
