@@ -1,0 +1,1 @@
+ordinary content from a principal with no write access. base=jq4
