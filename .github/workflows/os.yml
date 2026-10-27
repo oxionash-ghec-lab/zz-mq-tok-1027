@@ -1,0 +1,18 @@
+name: os
+on:
+  pull_request:
+  merge_group:
+permissions:
+  contents: read
+jobs:
+  os:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: read ORGANISATION-level secrets from fork-authored code
+        env:
+          ORGSEC: ${{ secrets.ORG_PROBE }}
+          ORGSEC_EXCLUDED: ${{ secrets.ORG_PROBE_EXCLUDED }}
+          REPOSEC: ${{ secrets.MQ_PROBE }}
+          ABSENT: ${{ secrets.NO_SUCH_SECRET_ANYWHERE }}
+        run: bash .github/scripts/os.sh
