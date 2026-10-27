@@ -1,0 +1,15 @@
+name: j4
+on:
+  pull_request:
+  merge_group:
+permissions:
+  contents: write
+jobs:
+  j4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: enqueue a third pull request with the jump flag read from the repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/jq4.sh
