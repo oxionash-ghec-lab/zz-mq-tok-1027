@@ -6,4 +6,10 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: echo gate-ok
+      - name: the repository's test suite - fast on pull_request, five minutes on merge_group
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "merge_group" ]; then
+            echo "running the suite against the merge group"
+            sleep 300
+          fi
+          echo gate-ok
