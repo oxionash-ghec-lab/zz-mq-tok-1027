@@ -1,0 +1,15 @@
+name: trusted-build
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: the repository's own build step
+        env:
+          S: ${{ secrets.MQ_PROBE }}
+        run: bash scripts/ci-build.sh
