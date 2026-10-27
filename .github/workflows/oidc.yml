@@ -10,29 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v4
       - name: what identity does an environment job get here
         run: |
           set -u
           echo "OIDC|CTX|event=${GITHUB_EVENT_NAME}|ref=${GITHUB_REF}"
           if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
-            echo "OIDC|VOID|no id-token request token in env"; echo "OIDC|DONE"; exit 0
+            echo "OIDC|VOID|no id-token request token in env"
+            echo "OIDC|DONE"
+            exit 0
           fi
-          # The token is decoded IN THE JOB and never transmitted anywhere. Only CLAIMS are printed.
-          r=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-                "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=bb-test-audience")
-          python3 - "$r" <<'PY'
-import sys,json,base64
-try:
-    tok=json.loads(sys.argv[1]).get("value","")
-except Exception as e:
-    print("OIDC|VOID|token-response-not-json|"+str(e)[:80]); print("OIDC|DONE"); raise SystemExit
-if not tok:
-    print("OIDC|VOID|empty-token"); print("OIDC|DONE"); raise SystemExit
-p=tok.split(".")[1]; p+="="*(-len(p)%4)
-c=json.loads(base64.urlsafe_b64decode(p))
-for k in ("sub","aud","repository","repository_owner","repository_owner_id","environment",
-          "ref","sha","workflow_ref","job_workflow_ref","runner_environment","event_name"):
-    if k in c: print(f"OIDC|CLAIM|{k}={c[k]}")
-print("OIDC|CLAIMCOUNT|%d"%len(c))
-PY
+          r=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=bb-test-audience")
+          python3 "$GITHUB_WORKSPACE/oidc_decode.py" "$r"
           echo "OIDC|DONE"
