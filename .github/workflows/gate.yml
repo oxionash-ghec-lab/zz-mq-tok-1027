@@ -6,4 +6,10 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: echo gate-ok
+      - name: fast on pull_request, slow on merge_group so entries stay observable
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "merge_group" ]; then
+            echo "gate holding the entry open for observation"
+            sleep 300
+          fi
+          echo gate-ok
