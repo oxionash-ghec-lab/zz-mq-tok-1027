@@ -6,4 +6,12 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: echo gate-ok
+      - uses: actions/checkout@v4
+      - name: owner policy test
+        run: |
+          echo "GATE-VERSION=owner-real"
+          if [ -f forbidden.txt ]; then
+            echo "GATE-RESULT=FAIL forbidden.txt present - the owner policy test fired"
+            exit 1
+          fi
+          echo "GATE-RESULT=PASS owner policy test ran and found nothing"
