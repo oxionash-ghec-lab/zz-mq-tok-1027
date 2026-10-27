@@ -6,4 +6,11 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - run: echo gate-ok
+      - name: pass on pull_request, REJECT at the queue stage
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "merge_group" ]; then
+            sleep 20
+            echo "gate REJECTING this change at the queue stage"
+            exit 1
+          fi
+          echo gate-ok
