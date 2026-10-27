@@ -20,11 +20,20 @@ scope_probe () {  # $1=label $2=scope-string $3=authmode(tok|anon)
   if [ "$code" = "200" ]; then
     acc=$(echo "$body" | python3 -c '
 import sys,json,base64
-t=json.load(sys.stdin)["token"]; p=t.split(".")[1]
-p+="="*(-len(p)%4)
-d=json.loads(base64.urlsafe_b64decode(p))
-print("access=%s | keys=%s" % (json.dumps(d.get("access")), sorted(d.keys())))
-' 2>&1 | head -c 400)
+try:
+    t=json.load(sys.stdin)["token"]
+except Exception as e:
+    print("PARSE-FAIL %r" % (e,)); raise SystemExit
+parts=t.split(".")
+if len(parts)!=3:
+    print("opaque-token parts=%d len=%d" % (len(parts),len(t))); raise SystemExit
+try:
+    q=parts[1]; q+="="*(-len(q)%4)
+    d=json.loads(base64.urlsafe_b64decode(q))
+    print("access=%s keys=%s" % (json.dumps(d.get("access")),sorted(d.keys())))
+except Exception as e:
+    print("DECODE-FAIL %r parts=3 len=%d" % (e,len(t)))
+' 2>&1 | tr -d "\n" | head -c 400)
     echo "PKGX|SCOPE|${label}|${mode}|http=${code}|${acc}"
   else
     echo "PKGX|SCOPE|${label}|${mode}|http=${code}|body=$(echo "$body" | head -c 200 | tr -d '\n')"
