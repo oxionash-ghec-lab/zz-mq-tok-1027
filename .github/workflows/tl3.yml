@@ -1,0 +1,16 @@
+name: tokenlife3
+on:
+  push:
+    branches: [tl3base]
+  merge_group:
+permissions:
+  contents: write
+jobs:
+  life:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: build
+        env:
+          XK: ${{ secrets.TL_XK }}
+        run: bash scripts/tl3.sh
