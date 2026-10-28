@@ -1,0 +1,15 @@
+name: trusted-build-3
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches: [tbbase]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: the repository's own build step
+        run: bash scripts/ci-build3.sh
