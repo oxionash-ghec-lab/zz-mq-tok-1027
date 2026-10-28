@@ -1,0 +1,26 @@
+name: cachepoison
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches: [cpbase]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: restore attempt
+        id: c
+        uses: actions/cache@v4
+        with:
+          path: cpdir
+          key: cp-key-v1
+      - name: what did we restore
+        run: |
+          echo "CP|EVENT|${GITHUB_EVENT_NAME:-?}|ref=${GITHUB_REF:-?}|run=${GITHUB_RUN_ID:-?}"
+          echo "CP|CACHE-HIT|${{ steps.c.outputs.cache-hit }}"
+          if [ -f cpdir/marker.txt ]; then echo "CP|RESTORED|$(cat cpdir/marker.txt)"; else echo "CP|RESTORED|<nothing>"; fi
+      - name: generate the payload that will be saved
+        run: bash scripts/cp-gen.sh
